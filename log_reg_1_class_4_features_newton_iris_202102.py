@@ -8,16 +8,16 @@ import scipy.linalg as la
 # iris=sk.datasets.load_iris() # does not work TODO
 iris=datasets.load_iris()
 
-phi=iris['data'][:,[int(sys.argv[2]),int(sys.argv[3])]]    # (150,2)
-Phi=np.c_[np.ones(len(phi),dtype='int'),phi] # (150,3)
-w=np.zeros(3) # (3,)
 t=(iris['target']==int(sys.argv[1])).astype(int) # (150,)
+phi=iris['data'][:,[0,1,2,3]]    # (150,2)
+Phi=np.c_[np.ones(len(phi),dtype='int'),phi] # (150,5)
+w=np.zeros(5) # (5,)
 p1=sp.special.expit(Phi@w)     # p1|phi # (150,)
-grad=Phi.T @ (p1-t) # (3,)
+grad=Phi.T @ (p1-t) # (5,)
 
-for i in range(0,50):
+for i in range(0,10):
     p1=sp.special.expit(Phi@w)     # p1|phi  (150,)
-    grad=Phi.T @ (p1-t) # (3,)
+    grad=Phi.T @ (p1-t) # (5,)
     R=np.diag(p1*(1-p1))    # (150,150)
     H=Phi.T @ R @ Phi
     w=w-la.lu_solve(la.lu_factor(H),grad)
