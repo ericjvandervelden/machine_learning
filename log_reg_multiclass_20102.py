@@ -15,6 +15,16 @@ iris=datasets.load_iris()
 phi=iris['data'][:,int(sys.argv[2])]    # (150,) # geef features op,
 Phi=np.c_[np.ones((phi.shape[0],1)),phi] #(150,#features+1)
 
+# We willen maken (w1,w0,w2,w0,...) # (150,#samples) = volgorde zoals de waargenomen classes zijn   ,
+#W=(w0,w1,w2), vert. dim=#features+1 , #classes=3   ,
+# W@T.T=(w1,w0,w2,w0,...) # (150,#samples)  , waar T:
+#T=(010
+#   100
+#   001
+#   100
+#   ...
+# matrix ipv t=(1,0,2,0,...) die de classes geeft waarin elke waarneming zit    ,
+
 t=iris.target
 T=np.zeros([len(t),3])
 for k in np.arange(3):
@@ -24,9 +34,10 @@ for k in np.arange(3):
 #for k in np.arange(3):
 #    T[k,:]=(t==k).astype(int)
 
-W=np.zeros((Phi.shape[1],np.unique(t).shape[0])) # #features +1, #classes  ,
+W=np.zeros((Phi.shape[1],np.unique(t).shape[0])) # (#features +1, #classes) 
+                                                    # w's die naast elkaar rechtop staan  ,
 
-#W=(w0,w1,w2), wi staande vectoren, dim=#features+1 ,
+#W=(w0,w1,w2), wi staande vectoren, vert. dim=#features+1 , #classes=3 hier,    
 #T=(010
 #   100
 #   001
@@ -37,7 +48,27 @@ W=np.zeros((Phi.shape[1],np.unique(t).shape[0])) # #features +1, #classes  ,
 np.diag(Phi@W@T.T)
 Phi@W       # W=(w0,w1,w2) # (#features+1,#classes)
 
-np.exp(np.diag(Phi@W@T.T))/(np.exp(Phi@W)@np.ones(np.unique(t).shape[0]))
+# Bishop (p.209) (4.104)    , maar voor iedere waarneming phi met z'n class (supervised learning),
+# hier kun je de lh mee maken   , TODO
+y=np.exp(np.diag(Phi@W@T.T))/( np.exp(Phi@W)@np.ones(np.unique(t).shape[0]) )
+
+#
+np.ones(Phi.shape[0])@np.exp(Phi@W)
+# deel iedere column door som van de column: 
+Pcgf=np.exp(Phi@W)/( np.ones(Phi.shape[0])@np.exp(Phi@W) )
+# #classes grads op een rij; Bishop (4.109)
+Phi.T @ ( np.exp(Phi@W)/( np.ones(Phi.shape[0])@np.exp(Phi@W) ) - T )
+#array([[ -49.        ,  -49.        ,  -49.        ],
+#       [ -11.00133333,  -65.10133333, -100.10133333]])
+
+#In [781]: Phi.T @ Phi
+#Out[781]: 
+#array([[150. , 179.8],
+#       [179.8, 302.3]])
+
+
+
+
 
 w=np.zeros(2) # (2,)
 t=(iris['target']==int(sys.argv[1])).astype(int) # (150,)
