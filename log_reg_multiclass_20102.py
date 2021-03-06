@@ -55,16 +55,24 @@ y=np.exp(np.diag(Phi@W@T.T))/( np.exp(Phi@W)@np.ones(np.unique(t).shape[0]) )
 #
 np.ones(Phi.shape[0])@np.exp(Phi@W)
 # deel iedere column door som van de column: 
-Pcgf=np.exp(Phi@W)/( np.ones(Phi.shape[0])@np.exp(Phi@W) )
+Pcf=np.exp(Phi@W)/( np.ones(Phi.shape[0])@np.exp(Phi@W) )
 # #classes grads op een rij; Bishop (4.109)
-Phi.T @ ( np.exp(Phi@W)/( np.ones(Phi.shape[0])@np.exp(Phi@W) ) - T )
+grads=Phi.T @ ( np.exp(Phi@W)/( np.ones(Phi.shape[0])@np.exp(Phi@W) ) - T )
 #array([[ -49.        ,  -49.        ,  -49.        ],
 #       [ -11.00133333,  -65.10133333, -100.10133333]])
 
+
+
+# len phi = len w  = #features +1
+# er zijn #classes w's  ,
+
+# bij #features+1=2 , 
 #In [781]: Phi.T @ Phi
 #Out[781]: 
 #array([[150. , 179.8],
 #       [179.8, 302.3]])
+# maar dit zegt niets over het #classes ,
+# onze matrix is #classes*(#features+1) groot,  
 
 
 
