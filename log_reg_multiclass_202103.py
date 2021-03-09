@@ -48,9 +48,11 @@ for k in np.arange(NC):
 #for k in np.arange(3):
 #    T[k,:]=(t==k).astype(int)
 
-W=np.zeros((NF+1,NC)) # (#features +1, #classes) 
+W=np.ones((NF+1,NC)) # (#features +1, #classes) 
                                                     # w's die naast elkaar rechtop staan  ,
-W[0,:]=1
+#W[0,:]=1
+
+for i in np.arange(0,NI):
 
 #W=(w0,w1,w2), wi staande vectoren, vert. dim=#features+1 , #classes=3 hier,    
 #T=(010
@@ -60,30 +62,35 @@ W[0,:]=1
 #   ...
 # matrix ipv t=(1,0,2,0,...) die de classes geeft waarin elke waarneming zit    ,
 # W@T.T=(w1,w0,w2,w0,...) # (150,#samples)
-np.diag(Phi@W@T.T)
-Phi@W       # W=(w0,w1,w2) # (#features+1,#classes)
+    np.diag(Phi@W@T.T)
+    Phi@W       # W=(w0,w1,w2) # (#features+1,#classes)
 
 # Bishop (p.209) (4.104)    , maar voor iedere waarneming phi met z'n class (supervised learning),
 # hier kun je de lh mee maken   , TODO
-y=np.exp(np.diag(Phi@W@T.T))/( np.exp(Phi@W)@np.ones(NC) )
+    y=np.exp(np.diag(Phi @ W @ T.T))/( np.exp(Phi @ W) @ np.ones(NC) )  # NF+1 vector   , 
 
 #
-np.ones(NS)@np.exp(Phi@W)
+    np.ones(NS)@np.exp(Phi@W)
 # deel iedere column door som van de column: 
-PcGs=np.exp(Phi@W)/( np.ones(NS) @ np.exp(Phi@W) )   # NS x NC, elke term= (4.104) = (c|s)
+    PcGs=np.exp(Phi@W)/( np.ones(NS) @ np.exp(Phi@W) )   # NS x NC, elke term= (4.104) = (c|s)
 # #classes grads op een rij; Bishop (4.109)
 #Grads=Phi.T @ ( np.exp(Phi@W)/( np.ones(NS) @ np.exp(Phi@W) ) - T )
-Grads=Phi.T @ ( PcGs - T )   # NF+1 x NC
+    Grad=Phi.T @ ( PcGs - T )   # NF+1 x NC
 #array([[ -49.        ,  -49.        ,  -49.        ],
 #       [ -11.00133333,  -65.10133333, -100.10133333]])
 
 # hessian   ,
-D=np.array([]).reshape(0,NS*NC)
-for c in np.arange(0,NC):
-    D=np.r_[D,np.kron(np.ones(NC),np.diag(PcGs[:,c]))]
-R=(np.eye(NS*NC)-D)*D.T  # NS*NC x NS*NC
-H=Phi.T @ R @ Phi    # TODO
-w=w-la.lu_solve(la.lu_factor(H),grad)
+    D=np.array([]).reshape(0,NS*NC)
+    for c in np.arange(0,NC):
+        D=np.r_[D,np.kron(np.ones(NC),np.diag(PcGs[:,c]))]
+    R=(np.eye(NS*NC)-D)*D.T  # (NS x NS)*NC
+    Phi_NC=np.kron(np.eye(NC),Phi) # (NS x NF+1)*NC
+    H=Phi_NC.T @ R @ Phi_NC # (NF+1)*NC x (NF+1)*NC
+    grad=Grad.reshape(-1,1,order='f') # NF+1 * NC vector ; grad to wj is zo groot als een phi = NF+1
+    w=W.reshape(-1,1,order='f') # of W.T.reshape(-1,1) # NF+1 * NC vector   ,
+    w=w-la.lu_solve(la.lu_factor(H),grad) # grad naar wj is net zo groot als wj = NF+1
+    W=w.reshape(-1,NC,order='f')
+    print(W )
 
 
 
@@ -106,31 +113,19 @@ w=w-la.lu_solve(la.lu_factor(H),grad)
 
 
 
-w=np.zeros(2) # (2,)
-t=(iris['target']==int(sys.argv[1])).astype(int) # (150,)
-p1=sp.special.expit(Phi@w)     # p1|phi # (150,)
-grad=Phi.T @ (p1-t) # (2,)
 
-for i in range(0,50):
-    p1=sp.special.expit(Phi@w)     # p1|phi  (150,)
-    grad=Phi.T @ (p1-t) # (2,)
-    R=np.diag(p1*(1-p1))    # (150,150)
-    H=Phi.T @ R @ Phi
-    w=w-la.lu_solve(la.lu_factor(H),grad)
-    display(w)
-
-import matplotlib.pyplot as plt
-import seaborn
-seaborn.set()
-
-plt.figure()
-plt.plot(phi[t==0],t[t==0],'gs')
-plt.plot(phi[t==1],t[t==1],'b^')
-
-grid=np.linspace(min(phi),max(phi),101)
-Phi_grid=np.c_[np.ones(101,dtype='int'),grid]
-t_grid=sp.special.expit(Phi_grid @ w)
-plt.plot(grid,t_grid)
-
-plt.show()
-
+#import matplotlib.pyplot as plt
+#import seaborn
+#seaborn.set()
+#
+#plt.figure()
+#plt.plot(phi[t==0],t[t==0],'gs')
+#plt.plot(phi[t==1],t[t==1],'b^')
+#
+#grid=np.linspace(min(phi),max(phi),101)
+#Phi_grid=np.c_[np.ones(101,dtype='int'),grid]
+#t_grid=sp.special.expit(Phi_grid @ w)
+#plt.plot(grid,t_grid)
+#
+#plt.show()
+#
