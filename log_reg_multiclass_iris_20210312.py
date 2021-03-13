@@ -5,25 +5,29 @@ from sklearn import datasets
 import scipy as sp
 import scipy.linalg as la
 
-if len(sys.argv)!=2:
-    print("Use: og_reg_multiclass_self_202103.py <#iteraties>\n",file=sys.stderr) 
+if len(sys.argv)!=4:
+    print("Use: og_reg_multiclass_20102.py <features> <#classes> <#iteraties>\n",file=sys.stderr) 
     sys.exit(1) 
 
 # NF=#features
 # NC=#classes
 # NI=#iteraties
 # NS=#samples
-
-NI=int(sys.argv[1])
-
-features=np.array([0])
+features=np.array(sys.argv[1].split(',')).astype(int)
 NF=len(features)
-my_data=np.array([-2,2]).reshape(-1,1)   # ipv iris.data
-NS=my_data.shape[0]
-phi=my_data[:,features]  # phi==my_data    
-Phi=np.c_[np.ones(NS),phi] 
+NC=int(sys.argv[2])
+NI=int(sys.argv[3])
 
-NC=2
+# iris=sk.datasets.load_iris() # does not work TODO
+iris=datasets.load_iris()
+NS=iris.data.shape[0]
+
+# we gaan nu uit van 1 feature, de laatste  ,
+# roep script aan met #features=4, #classes=3
+
+phi=iris.data[:,features]    # (NS,) # samples van laatste feature 
+Phi=np.c_[np.ones(NS),phi] #(NS,#features+1)
+#Phi=np.c_[np.ones((NS,1)),phi] # niet nodig (NS,1) ipv NS  ,
 
 # We willen maken (w1,w0,w2,w0,...) # NS in volgorde zoals de waargenomen classes zijn   ,
 #W=(w0,w1,w2), vert. dim=#features+1 , #classes=3   ,
@@ -35,19 +39,20 @@ NC=2
 #   ...
 # matrix ipv t=(1,0,2,0,...) die de classes geeft waarin elke waarneming zit    ,
 
-t=np.array([0,1])       # classes van samples   ,
+t=iris.target
 T=np.zeros([NS,NC],dtype=int)
 for k in np.arange(NC):
     T[:,k]=t==k
+# of    ,
+#T=np.zeros([3,len(t)])
+#for k in np.arange(3):
+#    T[k,:]=(t==k).astype(int)
 
-W=np.zeros((NF+1,NC)) 
+W=np.zeros((NF+1,NC)) # (#features +1, #classes) 
+                                                    # w's die naast elkaar rechtop staan  ,
+#W[0,:]=1
 for i in np.arange(0,np.minimum(NF+1,NC)):
     W[i,i]=1
-
-print("T:\n")
-print(T)
-print("W:\n")
-print(W)
 
 for i in np.arange(0,NI):
 
@@ -70,8 +75,6 @@ for i in np.arange(0,NI):
     np.ones(NS)@np.exp(Phi@W)
 # deel iedere column door som van de column: 
     PcGs=np.exp(Phi@W)/( np.ones(NS) @ np.exp(Phi@W) )   # NS x NC, elke term= (4.104) = (c|s)
-    print("PcGs:\n")
-    print(PcGs)
 # #classes grads op een rij; Bishop (4.109)
 #Grads=Phi.T @ ( np.exp(Phi@W)/( np.ones(NS) @ np.exp(Phi@W) ) - T )
     Grad=Phi.T @ ( PcGs - T )   # NF+1 x NC
@@ -89,7 +92,6 @@ for i in np.arange(0,NI):
     w=W.reshape(-1,1,order='f') # of W.T.reshape(-1,1) # NF+1 * NC vector   ,
     w=w-la.lu_solve(la.lu_factor(H),grad) # grad naar wj is net zo groot als wj = NF+1
     W=w.reshape(-1,NC,order='f')
-    print("W:\n" )
     print(W )
 
 
