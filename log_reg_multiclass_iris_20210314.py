@@ -5,31 +5,30 @@ from sklearn import datasets
 import scipy as sp
 import scipy.linalg as la
 
-if len(sys.argv)!=4:
-    print("Use: og_reg_multiclass_self_202103.py <features> <classes> <#iteraties>\n",file=sys.stderr) 
-    sys.exit(1) 
+if len(sys.argv)!=3:
+    print("Use: og_reg_multiclass_20102.py <features> <#iteraties>\n",file=sys.stderr)
+    sys.exit(1)
+
 
 # NF=#features
 # NC=#classes
 # NI=#iteraties
 # NS=#samples
 
-#NI=int(sys.argv[1])
-#features=np.array([0])
-#NF=features.shape[0]
-#my_data=np.array([-2,2]).reshape(-1,1)   # ipv iris.data
-#NS=my_data.shape[0]
-#phi=my_data[:,features]  # phi==my_data    
-#Phi=np.c_[np.ones(NS),phi] 
+features=np.array(sys.argv[1].split(',')).astype(int)
+NF=features.shape[0]
+NI=int(sys.argv[2])
 
-NF=1
-phi=np.array(sys.argv[1].split(',')).astype(int)
-NS=phi.shape[0]
-Phi=np.c_[np.ones(NS),phi] 
-NI=int(sys.argv[3])
-print("Phi:")
-print(Phi)
+# iris=sk.datasets.load_iris() # does not work TODO
+iris=datasets.load_iris()
+NS=iris.data.shape[0]
 
+# we gaan nu uit van 1 feature, de laatste  ,
+# roep script aan met #features=4, #classes=3
+
+phi=iris.data[:,features]    # (NS,) # samples van laatste feature 
+Phi=np.c_[np.ones(NS),phi] #(NS,#features+1)
+#Phi=np.c_[np.ones((NS,1)),phi] # niet nodig (NS,1) ipv NS  ,
 
 
 # We willen maken (w1,w0,w2,w0,...) # NS in volgorde zoals de waargenomen classes zijn   ,
@@ -42,22 +41,21 @@ print(Phi)
 #   ...
 # matrix ipv t=(1,0,2,0,...) die de classes geeft waarin elke waarneming zit    ,
 
-#t=np.array([0,1])       # classes van samples   ,
-t=np.array(sys.argv[2].split(',')).astype(int)
+t=iris.target   # classes van samples   ,
 NC=np.unique(t).shape[0]           # aanpassing 1
 T=np.zeros([NS,NC],dtype=int)
 for k in np.arange(NC):
     T[:,k]=t==k         # set col T
 
-#W=np.zeros((NF+1,NC)) 
-#for i in np.arange(0,np.minimum(NF+1,NC)):
-#    W[i,i]=np.log(2)
-W=np.log(np.array([1,2,3,4])).reshape(-1,2) # OK    ,
-W=np.random.randint(10,size=(2,2))
-W=np.log(np.array([2,1,1,2])).reshape(-1,2) # ERR
-print("T:")
+W=np.zeros((NF+1,NC)) 
+for i in np.arange(0,np.minimum(NF+1,NC)):
+    W[i,i]=1
+
+print("T:\n")
+print(T.shape)
 print(T)
-print("W:")
+print("W:\n")
+print(W.shape)
 print(W)
 
 for i in np.arange(0,NI):
@@ -81,15 +79,20 @@ for i in np.arange(0,NI):
     np.ones(NS)@np.exp(Phi@W)
 # deel iedere column door som van de column: 
     Int=np.exp(Phi@W)   # NS x NC               # aanpassing 2
+    print("Int:\n" )
+    print(Int.shape)
+    print(( np.ones((NS,1)) ).shape)
     Pcs=Int/( Int @ np.ones((NC,1)) )   # NS x NC, elke term= (4.104) = (c|s) # aanpassing 2
                                     # comment deel door de som over alle classes    ,
-    print("Pcs:")
+    print("Pcs:\n")
+    print(Pcs.shape)
     print(Pcs)
 # #classes grads op een rij; Bishop (4.109)
 #Grads=Phi.T @ ( np.exp(Phi@W)/( np.ones(NS) @ np.exp(Phi@W) ) - T )
     Grad=Phi.T @ ( Pcs - T )   # NF+1 x NC
                                     # comment sommeer over alle samples,    
-    print("Grad:")
+    print("Grad:\n")
+    print(Grad.shape)
     print(Grad)
 #array([[ -49.        ,  -49.        ,  -49.        ],
 #       [ -11.00133333,  -65.10133333, -100.10133333]])
@@ -98,32 +101,33 @@ for i in np.arange(0,NI):
     Int1=Int0.T @ -Int0
     Int2=np.diag(np.block([Pcs[:,j] for j in range(NC)]))
     Int=Int2+Int1
-    print("Int:")
+    print("Int:\n")
     print(Int.shape)
     print(Int)
     Phi_NC_diag=np.kron(np.eye(NC),Phi)
     Hessian=Phi_NC_diag.T @ Int @ Phi_NC_diag
-    print("Hessian:" )
+    print("Hessian:\n" )
     print(Hessian.shape)
     print(Hessian)
     grad=Grad.reshape(-1,1,order='f') # NF+1 * NC vector ; grad to wj is zo groot als een phi = NF+1
-    print("grad:")
-    print(grad.shape)
-    print(grad)
+    print("Grad:\n")
+    print(Grad.shape)
+    print(Grad)
     w=W.reshape(-1,1,order='f') # of W.T.reshape(-1,1) # NF+1 * NC vector   ,
-    print("w:")
+    print("w:\n")
     print(w.shape)
     print(w)
-    lu, piv=la.lu_factor(Hessian)
-    print("lu:")
+    lu, piv=la.lu_factor(Hessian)   # later rm  ,
+    print("lu:\n")
     print(lu.shape)
     print(lu)
-    print("piv:")
+    print("piv:\n")
     print(piv.shape)
     print(piv)
     w=w-la.lu_solve(la.lu_factor(Hessian),grad) # grad naar wj is net zo groot als wj = NF+1
     W=w.reshape(-1,NC,order='f')
-    print("W:")
+    print("W:\n")
+    print(W.shape)
     print(W)
 
     
@@ -140,7 +144,7 @@ for i in np.arange(0,NI):
 #    w=W.reshape(-1,1,order='f') # of W.T.reshape(-1,1) # NF+1 * NC vector   ,
 #    w=w-la.lu_solve(la.lu_factor(H),grad) # grad naar wj is net zo groot als wj = NF+1
 #    W=w.reshape(-1,NC,order='f')
-#    print("W:" )
+#    print("W:\n" )
 #    print(W )
 #
 #
