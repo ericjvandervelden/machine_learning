@@ -5,10 +5,16 @@ from sklearn.linear_model import LogisticRegression
 import matplotlib.pyplot as plt
 import seaborn
 
+if len(sys.argv)!=3:
+    print("Use: log_reg_1_class_2_features_iris_geron_202102.py <features> <class>\n",file=sys.stderr) 
+    sys.exit(1) 
+
+
 iris=datasets.load_iris()
 
-phi=iris.data[:,[int(sys.argv[2]),int(sys.argv[3])]]
-t = (iris.target==int(sys.argv[1])).astype(int)
+features=np.array(sys.argv[1].split(',')).astype(int)
+phi=iris.data[:,features]
+t = (iris.target==int(sys.argv[2])).astype(int)
 lg=LogisticRegression(solver="liblinear",C=10**10) 
 
 lg.fit(phi,t)

@@ -6,17 +6,19 @@ import matplotlib.pyplot as plt
 import seaborn
 
 if len(sys.argv)!=2:
-    print("Use: log_reg_3_class_4_features_iris_geron_202102.py <features>\n",file=sys.stderr) 
+    print("Use: log_reg_1_class_features_self_geron_20210315.py <samples> <classes>\n",file=sys.stderr) 
     sys.exit(1) 
 
 
 iris=datasets.load_iris()
 
-t =  iris.target
-#phi=iris.data[:,[0,1,2,3]]
-features=np.array(sys.argv[1].split(',')).astype(int)
+my_data=np.array(sys.argv[1].split(',')).astype(int)
+# MORGEN
 phi=iris.data[:,features]
-lg=LogisticRegression(multi_class="multinomial",solver="newton-cg",C=10**10) 
+my_data=np.
+phi=np.array
+t = (iris.target==int(sys.argv[2])).astype(int)
+lg=LogisticRegression(solver="liblinear",C=10**10) 
 
 lg.fit(phi,t)
 
