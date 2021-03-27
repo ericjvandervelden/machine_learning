@@ -17,56 +17,31 @@ def cg(A,k,x0,niter,tol):
     b=np.zeros(n)
     tol=float(tol)
 
+    print("x[:,0]:",x[:,0])
     p[:,0]=r[:,0]=k-A@x[:,0]
+    print("p[:,0]:",p[:,0])
+    print("r[:,0]:",r[:,0])
     for i in np.arange(0,n-1):
+        print("ronde:",i)
         a[i]=(r[:,i] @ r[:,i])/( p[:,i] @ A @ p[:,i] )
+        print("a[i]:",a[i])
         x[:,i+1]=x[:,i]+a[i]*p[:,i]
+        print("x[:,i+1]:",x[:,i+1])
         sol=x[:,i+1]
         if la.norm(k-A@x[:,i+1])<tol:#*la.norm(k):
+            print("break")
             break  
         r[:,i+1]=r[:,i]-a[i]*A @ p[:,i]
+        print("r[:,i+1]:",r[:,i+1])
         b[i]=( r[:,i+1] @ r[:,i+1] )/( r[:,i] @ r[:,i] )
+        print("b[i]:",b[i])
         p[:,i+1]=r[:,i+1] + b[i]*p[:,i]
-    return sol
-	    
-sol=cg("2,1,0,1,2,1,0,1,2","3,4,3","0,0,0","5","1e-5")	    
-print("sol:",sol)
-	    
-	
-def cg_(A,k,x0,niter,tol):
-    m=A.shape[0]
-    n=niter
-    x=np.zeros((m,n))
-    x[:,0]=x0
-    p=np.zeros((m,n))
-    r=np.zeros((m,n))
-    a=np.zeros(n)
-    b=np.zeros(n)
+        print("p[:,i+1]:",p[:,i+1])
+    print("i:",i)
+    print("sol:",sol)
 
-    p[:,0]=r[:,0]=k-A@x[:,0]
-    for i in np.arange(0,n-1):
-        a[i]=(r[:,i] @ r[:,i])/( p[:,i] @ A @ p[:,i] )
-        x[:,i+1]=x[:,i]+a[i]*p[:,i]
-        sol=x[:,i+1]
-        if la.norm(k-A@x[:,i+1])<tol:#*la.norm(k):
-            break  
-        r[:,i+1]=r[:,i]-a[i]*A @ p[:,i]
-        b[i]=( r[:,i+1] @ r[:,i+1] )/( r[:,i] @ r[:,i] )
-        p[:,i+1]=r[:,i+1] + b[i]*p[:,i]
-    return sol
+cg("2,1,0,1,2,1,0,1,2","3,4,3","0,0,0","5","1e-5")	    
 
-A=np.array([2,1,0,1,2,1,0,1,2]).reshape(-1,3)
-k=np.array([3,4,3])
-x0=np.zeros(3)
-niter=50	
-tol=1e-5
-sol=cg_(A,k,x0,niter,tol)	    
-print("sol:",sol)
-	
-	
-	
-	
-	
 #A=np.array([2,-1,-1,2]).reshape(-1,2)
 #lu,piv=la.lu_factor(A)
 #x=la.lu_solve((lu,piv),grad)
