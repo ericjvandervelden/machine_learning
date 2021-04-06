@@ -21,7 +21,7 @@ inner_inv=la.inv(inner)
 Phi_plus=inner_inv @ Phi.T
 w=Phi_plus @ t
 w2=Phi_plus @ t2
-eq=np.allclose(Phi @ w, t))
+eq=np.allclose(Phi @ w, t)
 eq2=np.isclose( Phi.T @ (t2-Phi@w2 ),0 )
 
 # we bereken Phi+  met la.pinv, via de svd, en met la.inv(Phi.T @ Phi) @ Phi.T  ,
@@ -37,15 +37,30 @@ Phi_plus3=U @ np.diag(1/s) @ V.T
 np.allclose(Phi_plus,Phi_plus2)
 np.allclose(Phi_plus,Phi_plus3)
 
+import sys
+if len(sys.argv)!=5:
+    print("Use: lin_reg_self_20210405.py <target> <alpha> <#iterations> <absolute tolerance>\n",file=sys.stderr) 
+    sys.exit(1) 
+
+
 Phi=np.array([[1,1,0],[0,1,1]]).T
-w=np.zeros(Phi.shape[1]);w[0]=1
-t=np.array([1,2,1])
-alpha=.01
-niter=10
+w=np.zeros(Phi.shape[1])#;w[0]=1
+t=np.array(sys.argv[1].split(',')).astype(int)#.reshape(-1,1) #(2,)
+alpha=float(sys.argv[2])
+niter=int(sys.argv[3])
+atol=float(sys.argv[4])
+cost_prev=1e8
 for i in np.arange(0,niter):
     w=w-alpha*Phi.T @ (Phi @ w - t)
-    c=np.square(la.norm(Phi @ w - t))
-    print("w=",w,", c=",c)
+    cost=.5*np.square(la.norm(Phi @ w - t))
+    print("w=",w," ,cost_prev=",cost_prev," cost=",cost," cost_prev-cost=",cost_prev-cost," i=",i)
+    if(cost_prev<cost):
+        print("verkeerde richting; stijgende cost\n")
+        break
+    if(cost_prev-cost<atol):
+        print("klaar\n")
+        break
+    cost_prev=cost
 
 
 
