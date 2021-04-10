@@ -16,27 +16,35 @@ def sgm(x):
 # iris=sk.datasets.load_iris() # does not work TODO
 iris=datasets.load_iris()
 phi=iris['data'][:,int(sys.argv[1])]    # (150,) # phi = features   ,
+#print("phi=",phi)
 Phi=np.c_[np.ones(len(phi),dtype='int'),phi] # (150,2)
+#print("Phi=",Phi)
 t=(iris['target']==int(sys.argv[2])).astype(int) # (150,)
+#print("t=",t)
 alpha=float(sys.argv[3])
 niter=int(sys.argv[4])
 atol=float(sys.argv[5])
 
 w=np.zeros(2) # (2,)
-cost_prev=1e8
 p1=sgm(Phi@w)     # p1|phi # (150,)
+#print("p1=",p1)
+cost_prev=np.ones(phi.shape[0])@(t*-np.log(p1)+(1-t)*-np.log(1-p1))
+#print("cost_prev=",cost_prev)
 for i in range(0,niter):
     grad=Phi.T @ (p1-t) # (2,)
+    print("grad=",grad)
     w=w-alpha*grad
+    print("w=",w)
     p1=sgm(Phi@w)     # p1|phi # (150,)
-    cost=np.ones(phi.shape[0])@(t*np.log(p1)+(1-t)*np.log(1-p1))
+    #print("p1=",p1)
+    cost=np.ones(phi.shape[0])@(t*-np.log(p1)+(1-t)*-np.log(1-p1))
+    #print("cost=",cost)
     if(cost_prev<cost):
-        print("verkeerde richting; stijgende cost\n")
+        print("verkeerde richting; stijgende cost")
+    if(np.abs(cost_prev-cost)<atol):
+        print("klaar")
+        print("w=",w,", i=",i,", cost_prev=",cost_prev,", cost=",cost)
         break
-    if(cost_prev-cost<atol):
-        print("klaar\n")
-        break
-    print("w=",w,", i=",i,", cost_prev=",cost_prev,", cost=",cost)
     cost_prev=cost
     
 
