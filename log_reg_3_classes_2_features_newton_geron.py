@@ -10,7 +10,15 @@ import matplotlib.pyplot as plt
 import seaborn
 seaborn.set()
 
-X=iris['data'][:,[2,3]]
+if len(sys.argv)!=3:
+    print("Use: log_reg_1_class_2_features_iris_geron_202102.py <features> <class>\n",file=sys.stderr) 
+    sys.exit(1) 
+
+
+#X=iris['data'][:,[2,3]]
+features=np.array(sys.argv[1].split(',')).astype(int)
+X=iris.data[:,features]
+
 y = iris["target"]
 #lg=LogisticRegression(C=10**10)
 lg=LogisticRegression(multi_class="multinomial",solver="lbfgs",C=10) # C=10 !

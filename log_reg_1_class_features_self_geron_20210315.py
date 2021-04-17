@@ -5,25 +5,20 @@ from sklearn.linear_model import LogisticRegression
 import matplotlib.pyplot as plt
 import seaborn
 
-if len(sys.argv)!=2:
+if len(sys.argv)!=3:
     print("Use: log_reg_1_class_features_self_geron_20210315.py <samples> <classes>\n",file=sys.stderr) 
     sys.exit(1) 
 
-
-iris=datasets.load_iris()
-
-my_data=np.array(sys.argv[1].split(',')).astype(int)
-# MORGEN
-phi=iris.data[:,features]
-my_data=np.
-phi=np.array
-t = (iris.target==int(sys.argv[2])).astype(int)
-lg=LogisticRegression(solver="liblinear",C=10**10) 
+phi=np.array(sys.argv[1].split(',')).astype(int).reshape(-1,1)
+t=np.array(sys.argv[2].split(',')).astype(int)
+lg=LogisticRegression(solver="liblinear",C=10**10,verbose=1) 
 
 lg.fit(phi,t)
 
-display(lg.intercept_)
-display(lg.coef_)
+print("intercept_")
+print(lg.intercept_)
+print("coef_")
+print(lg.coef_)
 
 #x0, x1 = np.meshgrid(
 #        np.linspace(0,8, 500).reshape(-1, 1),

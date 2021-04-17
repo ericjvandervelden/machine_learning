@@ -9,6 +9,22 @@ if len(sys.argv)!=8:
     print("Use: log_reg_1_class_1_feature_dg_backtrack_iris_20210406.py <features> <target> <#iterations gd> <absolute tolerance> <lift coeff c> <gamma g> <#iterations bt>\n",file=sys.stderr) 
     sys.exit(1) 
 
+
+
+# iris=sk.datasets.load_iris() # does not work TODO
+iris=datasets.load_iris()
+phi=iris['data'][:,int(sys.argv[1])]    # (150,) # phi = features   ,
+#print("phi=",phi)
+Phi=np.c_[np.ones(len(phi),dtype='int'),phi] # (150,2)
+#print("Phi=",Phi)
+t=(iris['target']==int(sys.argv[2])).astype(int) # (150,)
+#print("t=",t)
+niter_gd=int(sys.argv[3])
+atol=float(sys.argv[4])
+c=float(sys.argv[5])
+g=float(sys.argv[6])
+niter_bt=int(sys.argv[7])
+
 def sgm(x):
     return 1/(1+np.exp(-x))
 
@@ -29,25 +45,13 @@ def bt(w,grad):
         #print(t,p(0+t*d),p(0)+c*l(0)*t*d)
         #plt.plot(t*d,p(0)+c*l(0)*t*d,'gs')
         if fcost(w+s*-grad/la.norm(grad))<=fcost(w)+c*s*-la.norm(grad):
+#=
+#        if fcost(w+s*-d)<=fcost(w)+c*grad.T@(s*-d), d=grad/la.norm(grad)
+# TODO
             break
         n=n+1
     print("n_bt=",n)
     return s 
-
-
-# iris=sk.datasets.load_iris() # does not work TODO
-iris=datasets.load_iris()
-phi=iris['data'][:,int(sys.argv[1])]    # (150,) # phi = features   ,
-#print("phi=",phi)
-Phi=np.c_[np.ones(len(phi),dtype='int'),phi] # (150,2)
-#print("Phi=",Phi)
-t=(iris['target']==int(sys.argv[2])).astype(int) # (150,)
-#print("t=",t)
-niter_gd=int(sys.argv[3])
-atol=float(sys.argv[4])
-c=float(sys.argv[5])
-g=float(sys.argv[6])
-niter_bt=int(sys.argv[7])
 
 w=np.zeros(2) # (2,)
 cost_prev=fcost(w)

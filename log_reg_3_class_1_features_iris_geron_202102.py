@@ -5,6 +5,11 @@ from sklearn.linear_model import LogisticRegression
 import matplotlib.pyplot as plt
 import seaborn
 
+if len(sys.argv)!=4:
+    print("Use: og_reg_multiclass_self_202103.py <features> <classes> <#iteraties>\n",file=sys.stderr) 
+    sys.exit(1) 
+
+
 iris=datasets.load_iris()
 
 t =  iris.target

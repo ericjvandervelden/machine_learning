@@ -6,23 +6,19 @@ import matplotlib.pyplot as plt
 import seaborn
 
 if len(sys.argv)!=3:
-    print("Use: log_reg_1_class_1_feature_iris_geron_202102.py <feature> <class>\n",file=sys.stderr) 
+    print("Use: log_reg_1_class_features_self_geron_20210315.py <samples> <classes>\n",file=sys.stderr) 
     sys.exit(1) 
 
-
-iris=datasets.load_iris()
-
-phi=iris.data[:,[int(sys.argv[1])]]
-t = (iris.target==int(sys.argv[2])).astype(int)
-#lg=LogisticRegression()
-lg=LogisticRegression(solver="liblinear",C=10**10) 
-#lg=LogisticRegression(C=10**10)
-#lg=LogisticRegression(C=10)
+phi=np.array(sys.argv[1].split(',')).astype(int).reshape(-1,1)
+t=np.array(sys.argv[2].split(',')).astype(int)
+lg=LogisticRegression(solver="newton-cg",C=10**10,verbose=1) 
 
 lg.fit(phi,t)
 
-display(lg.intercept_)
-display(lg.coef_)
+print("intercept_")
+print(lg.intercept_)
+print("coef_")
+print(lg.coef_)
 
 #x0, x1 = np.meshgrid(
 #        np.linspace(0,8, 500).reshape(-1, 1),

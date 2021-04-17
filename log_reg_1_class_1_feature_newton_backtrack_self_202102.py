@@ -31,7 +31,10 @@ def sgm(x):
 # Phi, t globals, constants , 
 def fcost(w):
     p1=sgm(Phi@w)     # p1|phi # (150,)
-    return np.ones(Phi.shape[0])@(t*-np.log(p1)+(1-t)*-np.log(1-p1))
+    print("p1=",p1)
+    #cost=np.ones(Phi.shape[0])@(t*-np.log(p1)+(1-t)*-np.log(1-p1))
+    cost2=np.ones(Phi.shape[0])  @ np.where(t>0,-np.log(p1),-np.log(1-p1))
+    return cost2
 
 def fgrad(w):
     p1=sgm(Phi@w)     # p1|phi # (150,)
