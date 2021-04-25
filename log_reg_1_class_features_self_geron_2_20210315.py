@@ -5,13 +5,14 @@ from sklearn.linear_model import LogisticRegression
 import matplotlib.pyplot as plt
 import seaborn
 
-if len(sys.argv)!=3:
-    print("Use: log_reg_1_class_features_self_geron_20210315.py <samples> <classes>\n",file=sys.stderr) 
+if len(sys.argv)!=4:
+    print("Use: log_reg_1_class_features_self_geron_20210315.py samples classes tol\n",file=sys.stderr) 
     sys.exit(1) 
 
 phi=np.array(sys.argv[1].split(',')).astype(int).reshape(-1,1)
 t=np.array(sys.argv[2].split(',')).astype(int)
-lg=LogisticRegression(solver="newton-cg",C=10**10,verbose=1) 
+tol_=float(sys.argv[3])
+lg=LogisticRegression(solver="newton-cg",C=10**10,verbose=1,tol=tol_) 
 
 lg.fit(phi,t)
 
