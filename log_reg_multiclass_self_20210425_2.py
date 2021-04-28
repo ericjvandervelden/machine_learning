@@ -5,6 +5,22 @@ from sklearn import datasets
 import scipy as sp
 import scipy.linalg as la
 
+def fPcost(w):
+    W=w.reshape((F,G),order='f')
+    A=np.exp(Phi@W)  # (N,G)
+    P=A/(A@np.ones((G,1)))      # moet (G,1), niet G    , anders foutieve broadcast ,
+    cost=float(np.ones((1,N)) @ (-np.log(P)*T) @ np.ones((G,1)))   # () om P*T
+    return P,cost
+
+def fgrad(P):
+    Grad=Phi.T @ (P-T)   # (F,G)
+    grad=np.ravel(Grad,order='f') # (F*G,)
+    return grad
+    
+def fHessian(P):
+    Hessian=np.block([ [ Phi.T @ np.diag(P[:,k]*(int(k==j)-P[:,j])) @ Phi for j in range(0,G)] for k in range(0,G)])
+    return Hessian
+
 # gebruikt in newton    ,
 def cg_(A,k,x0,niter,tol):
     m=A.shape[0]
@@ -38,8 +54,18 @@ def bt(w,d):
         s=g**n
         #print(t,p(0+t*d),p(0)+c*l(0)*t*d)
         #plt.plot(t*d,p(0)+c*l(0)*t*d,'gs')
-        if fcost(w+s*d)<=fcost(w)+c1*fgrad(w).T @ (s*d):
-            if np.abs(fgrad(w+s*d).T @ d) < c2*np.abs(fgrad(w).T @ d):  
+        Pd,costd=fPcost(w+s*d)
+        gradd=fgrad(Pd)
+        P,cost=fPcost(w)
+        grad=fgrad(P)
+        print("Pd=",Pd)
+        print("costd=",costd)
+        print("gradd=",gradd)
+        print("P=",P)
+        print("cost=",cost)
+        print("grad=",grad)
+        if costd<=cost+c1*grad.T @ (s*d):
+            if np.abs(gradd).T @ d < c2*np.abs(grad.T @ d):  
                 print("break" )
                 break
         n=n+1
@@ -91,57 +117,55 @@ w=np.zeros(F*G)
 #for i in np.arange(0,np.minimum(F,G)): 
 #    W[i,i]=1
 print("T=",T)
-print("W=",W)
+#print("W=",W)
 
 #for i in np.arange(0,niter):
 
-def fcost(w):
-    W=w.reshape((F,G),order='f')
-    A=np.exp(Phi@W)  # (N,G)
-    P=A/(A@np.ones((G,1)))      # moet (G,1), niet G    , anders foutieve broadcast ,
-    return P,float(np.ones((1,N)) @ (-np.log(P)*T) @ np.ones((G,1)))   # () om P*T
-
-def fgrad():
-    
 
 
 
 
-#for i in np.arange(0,niter_logreg):
+for i in np.arange(0,niter_logreg):
 
 # Phi (M,F)
 # W (F,G)
-print("Phi@W=",Phi@W)
-A=np.exp(Phi@W)  # (N,G)
-P=A/(A@np.ones((G,1)))      # moet (G,1), niet G    , anders foutieve broadcast ,
-cst=float(np.ones((1,N)) @ (-np.log(P)*T) @ np.ones((G,1)))   # () om P*T
+#print("Phi@W=",Phi@W)
+#A=np.exp(Phi@W)  # (N,G)
+#P=A/(A@np.ones((G,1)))      # moet (G,1), niet G    , anders foutieve broadcast ,
+#cst=float(np.ones((1,N)) @ (-np.log(P)*T) @ np.ones((G,1)))   # () om P*T
 
-Grad=Phi.T @ (P-T)   # (F,G)
-grad=np.ravel(Grad,order='f') # (F*G,)
+
+
+#Grad=Phi.T @ (P-T)   # (F,G)
+#grad=np.ravel(Grad,order='f') # (F*G,)
 
 # GxG blokken van FxF   ,
-Hessian=np.block([ [ Phi.T @ np.diag(P[:,k]*(int(k==j)-P[:,j])) @ Phi for j in range(0,G)] for k in range(0,G)])
+#Hessian=np.block([ [ Phi.T @ np.diag(P[:,k]*(int(k==j)-P[:,j])) @ Phi for j in range(0,G)] for k in range(0,G)])
 
-print("A=",A)
-print("P=",P)
-print("cst=",cst)
-print("Grad=",Grad)
-print("grad=",grad)
-print(Hessian)
+    P,cost=fPcost(w)
+    grad=fgrad(P)
+    Hessian=fHessian(P)
 
-d=-cg_(Hessian,grad,np.zeros(F*G),50,1e-4) # newton , (F*G,)
-print("d=",d)
-w=np.ravel(W,order='f') # (F,)
-s=bt(w,d)
-#w=w+s*d
-#W=w.reshape((F,G),order='f')
+#print("A=",A)
+    print("P=",P)
+    print("cost=",cost)
+#print("Grad=",Grad)
+    print("grad=",grad)
+    print("Hessian=",Hessian)
 
-print("d=",d)
-print("w=",w)
-print("s=",s)
+    d=-cg_(Hessian,grad,np.zeros(F*G),50,1e-4) # newton , (F*G,)
+    print("d=",d)
+#w=np.ravel(W,order='f') # (F,)
+    s=bt(w,d)
+    w=w+s*d
+    #W=w.reshape((F,G),order='f')
+
+    print("d=",d)
+    print("w=",w)
+    print("s=",s)
 #print("W=",W)
 
-sys.exit(0)
+   # sys.exit(0)
 
 
 for i in np.arange(0,0):
